@@ -1,0 +1,33 @@
+{
+  "name": "ethereumjs-remote",
+  "version": "1.0.0",
+  "description": "Simple asynchronous interaction with smart contracts via remote nodes",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/stefanhengl/ethereumjs-remote"
+  },
+  "bugs": {
+    "url": "https://github.com/stefanhengl/ethereumjs-remote/issues"
+  },
+  "homepage": "https://github.com/stefanhengl/ethereumjs-remote",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ethereum",
+    "infura",
+    "remote",
+    "function",
+    "interact"
+  ],
+  "dependencies": {
+    "debug": "^3.0.1",
+    "ethereumjs-tx": "^1.3.3",
+    "joi": "^11.0.1",
+    "lodash": "^4.17.4",
+    "web3": "0.20.0"
+  },
+  "author": "Stefan Hengl <stefanhengl@fastmail.fm>",
+  "license": "MIT"
+}
