@@ -17,9 +17,9 @@ provider are asynchronous.
     const contractABI = contractBuildArtifact.abi
      
     ethereumRemote.callContractFunction({
-      from: 0x43aaE535BE7239c576FA3D152E14b1BC03fF4818,
+      from: '0x43aaE535BE7239c576FA3D152E14b1BC03fF4818',
       privateKey: '*********************************',
-      contract: '0x4ab1f10b54915c7324cd4130df90945338f155ad',
+      contractAddress: '0x4ab1f10b54915c7324cd4130df90945338f155ad',
       abi: contractABI,
       functionName: 'myFunction',
       functionArguments: [foo, bar],
