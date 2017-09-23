@@ -1,10 +1,10 @@
 {
   "name": "ethereumjs-remote",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Simple asynchronous interaction with smart contracts via remote nodes",
   "repository": {
-      "type": "git",
-      "url": "https://github.com/stefanhengl/ethereumjs-remote"
+    "type": "git",
+    "url": "https://github.com/stefanhengl/ethereumjs-remote"
   },
   "bugs": {
     "url": "https://github.com/stefanhengl/ethereumjs-remote/issues"
