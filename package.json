@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-remote",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Simple asynchronous interaction with smart contracts via remote nodes",
   "repository": {
     "type": "git",
