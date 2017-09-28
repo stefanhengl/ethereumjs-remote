@@ -13,6 +13,7 @@ const schema_sendTransaction = {
   functionName: Joi.string().required(),
   functionArguments: Joi.array().required(),
   provider: Joi.string().required(),
+  value: Joi.number().integer(),
 }
 
 const schema_call = {
@@ -31,6 +32,7 @@ const schema_createSignedRawTransaction = {
   functionName: Joi.string().required(),
   functionArguments: Joi.array().required(),
   web3: Joi.any().required(),
+  value: Joi.number().integer(),
 }
 
 /**
@@ -45,6 +47,7 @@ const schema_createSignedRawTransaction = {
  * @param {string} params.functionName - the name of the function you want to call
  * @param {array} params.functionArguments - the arguments in an array
  * @param {string} params.provider - the url of the provider of the remote node
+ * @param {integer} params.value - (optional) integer of the value in wei send with this transaction
  * @returns {Promise}
  */
 const sendTransaction = (params) => {
@@ -55,7 +58,6 @@ const sendTransaction = (params) => {
 
   return new Promise((resolve, reject) => {
     const web3 = new Web3(new Web3.providers.HttpProvider(params.provider))
-
     createSignedRawTransaction(
       _.assign(_.omit(params, ['provider']), {web3: web3})).
       then(rawTransaction => sendRawTransaction(rawTransaction, web3)).
@@ -112,12 +114,17 @@ const call = (params) => {
  * @param {string} params.functionName
  * @param {array} params.functionArguments
  * @param {Web3} params.web3
+ * @param {integer} params.value - (optional) integer of the value in wei send with this transaction
  * @returns {Promise}
  */
 const createSignedRawTransaction = (params) => {
   const result = Joi.validate(params, schema_createSignedRawTransaction)
   if (result.error) {
     throw result.error
+  }
+
+  if (!params.hasOwnProperty('value')) {
+    params.value = 0
   }
 
   return new Promise((resolve, reject) => {
@@ -146,7 +153,7 @@ const createSignedRawTransaction = (params) => {
                 const rawTx = {
                   to: params.contractAddress,
                   data: payloadData,
-                  value: '0x0',
+                  value: web3.toHex(params.value),
                   from: params.from,
                   nonce: '0x' + nonce,
                   gasLimit: web3.toHex(res),
