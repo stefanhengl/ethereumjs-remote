@@ -47,7 +47,7 @@ const schema_createSignedRawTransaction = {
  * @param {string} params.functionName - the name of the function you want to call
  * @param {array} params.functionArguments - the arguments in an array
  * @param {string} params.provider - the url of the provider of the remote node
- * @param {integer} params.value - (optional) integer of the value in wei send with this transaction
+ * @param {integer} params.value - (optional) value in wei you want to send with this transaction
  * @returns {Promise}
  */
 const sendTransaction = (params) => {
@@ -107,14 +107,14 @@ const call = (params) => {
  * The purpose of this function is to take care of the tedious formatting
  * and hex-encoding required for creating a raw transaction
  * @param {object} params - object containing all required parameters
- * @param {string} params.from
- * @param {string} params.privateKey
- * @param {string} params.contractAddress
- * @param {array} params.abi
- * @param {string} params.functionName
- * @param {array} params.functionArguments
- * @param {Web3} params.web3
- * @param {integer} params.value - (optional) integer of the value in wei send with this transaction
+ * @param {string} params.from - account that pays for the transaction
+ * @param {string} params.privateKey - the key of the account specified in 'from'
+ * @param {string} params.contractAddress - the address of the contract you want to interact with
+ * @param {array} params.abi - the abi of the contract you want to interact with
+ * @param {string} params.functionName - the name of the function you want to call
+ * @param {array} params.functionArguments - the arguments in an array
+ * @param {Web3} params.web3 - Web3 instance
+ * @param {integer} params.value - (optional) value in wei you want to send with this transaction
  * @returns {Promise}
  */
 const createSignedRawTransaction = (params) => {
@@ -188,7 +188,7 @@ const createSignedRawTransaction = (params) => {
 /**
  * Promise based version of web3.eth.sendRawTransaction
  * @param {string} rawTransaction - signed and serialized transaction. Output from createSignedRawTransaction.
- * @param {Web3} web3
+ * @param {Web3} web3 - Web3 instance
  * @returns {Promise}
  */
 const sendRawTransaction = (rawTransaction, web3) => {
