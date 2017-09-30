@@ -14,6 +14,7 @@ const schema_sendTransaction = {
   functionArguments: Joi.array().required(),
   provider: Joi.string().required(),
   value: Joi.number().integer(),
+  gasLimit: Joi.number().integer(),
 }
 
 const schema_call = {
@@ -33,6 +34,7 @@ const schema_createSignedRawTransaction = {
   functionArguments: Joi.array().required(),
   web3: Joi.any().required(),
   value: Joi.number().integer(),
+  gasLimit: Joi.number().integer(),
 }
 
 /**
@@ -48,6 +50,7 @@ const schema_createSignedRawTransaction = {
  * @param {array} params.functionArguments - the arguments in an array
  * @param {string} params.provider - the url of the provider of the remote node
  * @param {integer} params.value - (optional) value in wei you want to send with this transaction
+ * @param {integer} params.gasLimit - (optional) if not provided, the gasLimit will be estimated
  * @returns {Promise}
  */
 const sendTransaction = (params) => {
@@ -115,6 +118,7 @@ const call = (params) => {
  * @param {array} params.functionArguments - the arguments in an array
  * @param {Web3} params.web3 - Web3 instance
  * @param {integer} params.value - (optional) value in wei you want to send with this transaction
+ * @param {integer} params.gasLimit - (optional) if not provided, the gasLimit will be estimated
  * @returns {Promise}
  */
 const createSignedRawTransaction = (params) => {
@@ -135,44 +139,41 @@ const createSignedRawTransaction = (params) => {
       _.find(params.abi, {name: params.functionName}), '')
     const payloadData = functionDef.toPayload(params.functionArguments).data
 
-    // hex-encoded nonce
-    web3.eth.getTransactionCount(params.from, function (err, res) {
+    // get nonce
+    web3.eth.getTransactionCount(params.from, function (err, nonce) {
       if (!err) {
-        const nonce = res.toString(16)
+        debug('nonce:', nonce)
+
+        // get gasPrice
         web3.eth.getGasPrice(function (err, res) {
           if (!err) {
             const gasPrice = res
+            debug('gasPrice:', res)
 
-            web3.eth.estimateGas({
-              to: params.contractAddress,
-              data: payloadData,
-            }, function (err, res) {
-              if (!err) {
+            // Check if user supplied gasLimit. If yes, take it, if not,
+            // estimate it
+            if (typeof(params.gasLimit) !== 'undefined') {
+              debug('user supplied gasLimit:', params.gasLimit)
+              const serializedTx = sign_and_serialize(params, nonce,
+                payloadData, gasPrice, params.gasLimit)
 
-                // assemble raw transaction object
-                const rawTx = {
-                  to: params.contractAddress,
-                  data: payloadData,
-                  value: web3.toHex(params.value),
-                  from: params.from,
-                  nonce: '0x' + nonce,
-                  gasLimit: web3.toHex(res),
-                  gasPrice: '0x' + gasPrice,
+              resolve('0x' + serializedTx.toString('hex'))
+            } else {
+              web3.eth.estimateGas({
+                to: params.contractAddress,
+                data: payloadData,
+              }, function (err, res) {
+                if (!err) {
+                  debug('estimated gasLimit:', res)
+                  const serializedTx = sign_and_serialize(params, nonce,
+                    payloadData, gasPrice, res)
+
+                  resolve('0x' + serializedTx.toString('hex'))
+                } else {
+                  reject(err)
                 }
-                debug('raw transaction:', rawTx)
-
-                // sign and serialize the transaction
-                const tx = new EthereumTx(rawTx)
-                const privateKeyBuffer = Buffer.from(params.privateKey, 'hex')
-                tx.sign(privateKeyBuffer)
-                const serializedTx = tx.serialize()
-                debug('transaction signed and serialized')
-
-                resolve('0x' + serializedTx.toString('hex'))
-              } else {
-                reject(err)
-              }
-            })
+              })
+            }
           } else {
             reject(err)
           }
@@ -183,6 +184,36 @@ const createSignedRawTransaction = (params) => {
     })
 
   })
+}
+
+/**
+ * Helper function, takes care of hex-encoding, signing, and serializing
+ * @param {object} params - see params of createSignedRawTransaction
+ * @param {integer} nonce
+ * @param payloadData - output of SolidityFunction.toPayload
+ * @param {BigNumber} gasPrice
+ * @param {integer} gasLimit
+ * @returns {string} serialized and signed transaction
+ */
+const sign_and_serialize = (params, nonce, payloadData, gasPrice, gasLimit) => {
+  const rawTx = {
+    to: params.contractAddress,
+    data: payloadData,
+    value: params.web3.toHex(params.value),
+    from: params.from,
+    nonce: params.web3.toHex(nonce),
+    gasLimit: params.web3.toHex(gasLimit),
+    gasPrice: params.web3.toHex(gasPrice),
+  }
+  debug('raw transaction:', rawTx)
+
+  // sign and serialize the transaction
+  const tx = new EthereumTx(rawTx)
+  const privateKeyBuffer = Buffer.from(params.privateKey, 'hex')
+  tx.sign(privateKeyBuffer)
+  const serializedTx = tx.serialize()
+  debug('transaction signed and serialized')
+  return serializedTx
 }
 
 /**
