@@ -1,5 +1,5 @@
 .idea
 out
 node_modules
-/test/credentials.json
+test
 /.DS_Store
